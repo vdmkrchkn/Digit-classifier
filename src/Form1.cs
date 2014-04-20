@@ -11,13 +11,7 @@ using System.Windows.Forms;
 namespace AI_1
 {
     public partial class Form1 : Form
-    {
-        private Form2 form2 = new Form2();
-        private Pen pen = Pens.Black;
-        private Point pt1, pt2, pt3;        
-        private const int shift = 1;
-        private Sample smpX, smpY;        
-
+    {        
         public Form1()
         {
             InitializeComponent();
@@ -193,8 +187,10 @@ namespace AI_1
 
         private void segregate1_Click(object sender, EventArgs e)
         {
+            // Фаза 1 - проверка на линейную разделимость
             // шаг 1 - инициализация
-            List<Sample> sampling = new List<Sample>(InitW(5));
+            int classSize = 5; // кол-во элементов класса в выборке
+            List<Sample> sampling = new List<Sample>(InitW(classSize));
             if (sampling == null)
                 return;
             int m = (int)form2.numericUpDown1.Value;
@@ -204,13 +200,14 @@ namespace AI_1
             int h = 10;        // скорость обучения
             int iters = 10;    // кол-во итераций                        
             // шаг 2 - итеративный процесс
+            bool stop = false;
             for (int p = 0; p <= iters; ++p)                        
             {
                 int min = int.MaxValue;
                 int idx = -1;
                 for (int i = 0; i < sampling.Count; ++i)
                 {
-                    int sc = l.scalarProduct(sampling[i]);
+                    int sc = (int)l.scalarProduct(sampling[i]);
                     if (sc < min)
                     {
                         min = sc;
@@ -223,12 +220,33 @@ namespace AI_1
                 }
                 else if (min > 0)
                 {
-                    MessageBox.Show("Классы линейно разделимы");                    
-                    return;
+                    stop = true;
+                    break;
                 }                
+            }            
+            if(!stop)
+                MessageBox.Show("Классы линейно неразделимы");
+            else
+            {               
+                // Фаза 2 - определение порога                
+                l = Kozinets(toConvexHull(sampling));   // определение наилучшей разделяющей прямой
+                // поиск диапазона порога: maxY < T <= minX
+                double minX = double.MaxValue;
+                for(int i = 0; i < classSize; ++i)
+                {
+                    double sc = l.scalarProduct(sampling[i]);
+                    if (sc < minX)
+                        minX = sc;
+                }
+                MessageBox.Show(minX.ToString());
+                //double maxY = double.MinValue;
+                //for (int i = classSize; i < sampling.Count; ++i)
+                //{
+                //    double sc = l.scalarProduct(sampling[i]);
+                //    if (sc > maxY)
+                //        maxY = sc;
+                //}
             }
-            // шаг 3 - конец процесса
-            MessageBox.Show("Классы линейно неразделимы");
         }
 
         List<Sample> toConvexHull(List<Sample> ls)
@@ -241,7 +259,24 @@ namespace AI_1
             return w;
         }
 
-        void Kozinets(List<Sample> w)
+        double lambdaCalc(Sample w, Sample l)
+        {
+            Sample lw = l.Subtraction(w);
+            double num = 0, denom = 0;
+            for (int i = 0; i < lw.Height; ++i)
+                for (int j = 0; j < lw.Width; ++j)
+                {
+                    num += w[i, j] * lw[i,j];
+                    denom += lw[i, j] * lw[i, j];
+                }
+            return - num / denom;
+        }
+        /// <summary>
+        /// определение наилучшей разделяющей прямой
+        /// </summary>
+        /// <param name="w">выборка из выпуклых оболочек</param>
+        /// <returns>экземпляр Sample, соответствующий наилучшей разделяющей прямой</returns>
+        Sample Kozinets(List<Sample> w)
         {
             // шаг 1 - инициализация
             double minNorma = double.MaxValue;
@@ -253,10 +288,26 @@ namespace AI_1
                     idx = i;
                 }
             if (idx < 0)
-                return;
-            Sample l0 = w[idx];
-            //  шаг 2 - итеративный процесс
-
+                return null;
+            Sample l = w[idx];
+            //  шаг 2 - итеративный процесс            
+            foreach(Sample _w in w)
+            {
+                double lambda = lambdaCalc(_w, l);
+                while (lambda > 0 && lambda < 1)
+                {
+                    l = l.mulScalar(lambda).Sum(_w.mulScalar(1 - lambda));
+                    lambda = lambdaCalc(_w, l);
+                }
+            }
+            // шаг 3 - окончание процесса            
+            return l;
         }
+
+        Form2 form2 = new Form2();
+        Pen pen = Pens.Black;
+        Point pt1, pt2, pt3;
+        const int shift = 1;
+        Sample smpX, smpY;
     }
 }
