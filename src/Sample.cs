@@ -8,17 +8,33 @@ using System.Text;
 namespace AI_1
 {
     public class Sample
-    {
-        int m, n;
-        int[,] retina;
-        bool isExtend;
-        
+    {                
         public Sample(int h, int w, bool isExt = false)
         {            
             this.m = h;
             this.n = w;
             this.isExtend = isExt;
-            this.retina = new int[m, n];                        
+            this.retina = new double[m, n];                        
+        }
+
+        public int Height
+        {
+            get { return m; }
+        }
+
+        public int Width
+        {
+            get { return n; }
+        }
+
+        public bool IsExtend
+        {
+            get { return isExtend; }
+        }
+
+        public double this[int i, int j]
+        {
+            get { return retina[i, j]; }
         }
 
         public void Clear()
@@ -81,9 +97,9 @@ namespace AI_1
         /// </summary>
         /// <param name="that">вектор, на который скалярно умножается сетчатка</param>
         /// <returns>Скалярное произведение двух сетчаток</returns>
-        public int scalarProduct(Sample that)
+        public double scalarProduct(Sample that)
         {
-            int res = 0;
+            double res = 0;
             for (int i = 0; i < m; ++i)
                 for (int j = 0; j < n; ++j)
                     res += this.retina[i, j] * that.retina[i, j];
@@ -106,7 +122,7 @@ namespace AI_1
         /// </summary>
         /// <param name="val">Скаляр, на который умножается сетчатка</param>
         /// <returns>Объект Sample, сетчатка которой является результатом скалярного умножения</returns>
-        public Sample mulScalar(int val)
+        public Sample mulScalar(double val)
         {
             Sample res = new Sample(m, n);
             for (int i = 0; i < m; ++i)
@@ -149,5 +165,9 @@ namespace AI_1
                     res.retina[i, j] = this.retina[i, j] - that.retina[i, j];
             return res;
         }
+
+        int m, n;
+        double[,] retina;
+        bool isExtend;
     }
 }
