@@ -3,6 +3,7 @@ AI_1
 
 Image generator
 
+<<<<<<< HEAD
 % брака
 	X - 30 %
 	Y - 10 %
