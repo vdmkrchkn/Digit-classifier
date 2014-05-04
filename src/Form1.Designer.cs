@@ -35,6 +35,10 @@
             this.saveAs1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exit1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.image1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.learn1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.recognize1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.noise1 = new System.Windows.Forms.ToolStripMenuItem();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -42,8 +46,6 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.image1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.segregate1 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -110,6 +112,41 @@
             this.exit1.Text = "&Exit";
             this.exit1.Click += new System.EventHandler(this.exit1_Click);
             // 
+            // image1
+            // 
+            this.image1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.learn1,
+            this.recognize1,
+            this.noise1});
+            this.image1.Name = "image1";
+            this.image1.Size = new System.Drawing.Size(52, 20);
+            this.image1.Text = "&Image";
+            // 
+            // learn1
+            // 
+            this.learn1.Name = "learn1";
+            this.learn1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.L)));
+            this.learn1.Size = new System.Drawing.Size(165, 22);
+            this.learn1.Text = "&Learn";
+            this.learn1.Click += new System.EventHandler(this.segregate1_Click);
+            // 
+            // recognize1
+            // 
+            this.recognize1.Name = "recognize1";
+            this.recognize1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.R)));
+            this.recognize1.Size = new System.Drawing.Size(165, 22);
+            this.recognize1.Text = "&Recognize";
+            this.recognize1.Visible = false;
+            this.recognize1.Click += new System.EventHandler(this.recognize1_Click);
+            // 
+            // noise1
+            // 
+            this.noise1.Name = "noise1";
+            this.noise1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.N)));
+            this.noise1.Size = new System.Drawing.Size(165, 22);
+            this.noise1.Text = "&Noise";
+            this.noise1.Click += new System.EventHandler(this.noise1_Click);
+            // 
             // pictureBox1
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.White;
@@ -117,7 +154,7 @@
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(100, 100);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
@@ -151,7 +188,7 @@
             this.groupBox2.Size = new System.Drawing.Size(98, 65);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Направление";
+            this.groupBox2.Text = "Direction";
             // 
             // radioButton2
             // 
@@ -175,21 +212,6 @@
             this.radioButton1.Text = "Up";
             this.radioButton1.UseVisualStyleBackColor = true;
             // 
-            // image1
-            // 
-            this.image1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.segregate1});
-            this.image1.Name = "image1";
-            this.image1.Size = new System.Drawing.Size(52, 20);
-            this.image1.Text = "&Image";
-            // 
-            // segregate1
-            // 
-            this.segregate1.Name = "segregate1";
-            this.segregate1.Size = new System.Drawing.Size(152, 22);
-            this.segregate1.Text = "Se&gregate";
-            this.segregate1.Click += new System.EventHandler(this.segregate1_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -210,7 +232,6 @@
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
@@ -235,7 +256,9 @@
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.ToolStripMenuItem image1;
-        private System.Windows.Forms.ToolStripMenuItem segregate1;
+        private System.Windows.Forms.ToolStripMenuItem learn1;
+        private System.Windows.Forms.ToolStripMenuItem recognize1;
+        private System.Windows.Forms.ToolStripMenuItem noise1;
 
     }
 }
