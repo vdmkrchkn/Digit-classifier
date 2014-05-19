@@ -55,14 +55,14 @@ namespace AI_1
                     this[i, j] = bmp.GetPixel(i, j).Name.Equals("ff000000") ? 1 : 0;                
         }
 
-        public void Fill(int val)
+        public void Fill(double val)
         {
             for (int i = 0; i < m; ++i)
                 for (int j = 0; j < n; ++j)
                     this[i, j] = val;            
         }
 
-        public void FillExtend(int val, int extVal)
+        public void FillExtend(double val, double extVal)
         {
             Fill(val);
             for (int j = 0; j < n; ++j)
