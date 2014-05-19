@@ -13,11 +13,12 @@ namespace AI_1
     public partial class Form1 : Form
     {
         Form2 form2 = new Form2();
+        Form3 form3 = new Form3();
         Pen pen = Pens.Black;
         Point pt1, pt2, pt3;
         const int shift = 2;   // сдвиг по сетчатке        
         Retina separationLine; // разделяющая прямая
-        double threshold;      // порог
+        double threshold = 1;  // порог
 
         public Form1()
         {
@@ -173,75 +174,75 @@ namespace AI_1
             }
         }       
 
-        private void segregate1_Click(object sender, EventArgs e)
+        private void learn1_Click(object sender, EventArgs e)
         {
-            // Фаза 1 - проверка на линейную разделимость
-            // шаг 1 - инициализация
-            int classSize = 5; // кол-во элементов класса в выборке
-            List<Retina> sampling = new List<Retina>(InitW(classSize));
-            if (sampling == null)
-                return;
-            int m = (int)form2.numericUpDown1.Value;
-            int n = (int)form2.numericUpDown2.Value;
-            
-            Retina l = new Retina(m + 1, n, true);
-            l.FillExtend(1, 1);
-            int h = 10;        // скорость обучения
-            int iters = 10;    // кол-во итераций                        
-            // шаг 2 - итеративный процесс
-            bool stop = false;
-            for (int p = 0; p <= iters; ++p)                        
+            if (form3.ShowDialog() == DialogResult.OK)
             {
-                int min = int.MaxValue;
-                int idx = -1;
-                for (int i = 0; i < sampling.Count; ++i)
+                // Фаза 1 - проверка на линейную разделимость
+                // шаг 1 - инициализация
+                int classSize = int.Parse(form3.textBox1.Text); // кол-во элементов класса в выборке
+                List<Retina> sampling = new List<Retina>(InitW(classSize));
+                if (sampling == null)
+                    return;
+                int m = (int)form2.numericUpDown1.Value;
+                int n = (int)form2.numericUpDown2.Value;
+
+                Retina l = new Retina(m + 1, n, true);
+                l.FillExtend(threshold, -threshold);
+                int h = (int)form3.numericUpDown2.Value;        // скорость обучения
+                int iters = (int)form3.numericUpDown1.Value;    // кол-во итераций                        
+                // шаг 2 - итеративный процесс
+                bool stop = false;
+                for (int p = 1; p <= iters; ++p)
                 {
-                    int sc = (int)l.scalarProduct(sampling[i]);
-                    if (sc < min)
+                    int min = int.MaxValue;
+                    int idx = -1;
+                    for (int i = 0; i < sampling.Count; ++i)
                     {
-                        min = sc;
-                        idx = i;
+                        int sc = (int)l.scalarProduct(sampling[i]);
+                        if (sc < min)
+                        {
+                            min = sc;
+                            idx = i;
+                        }
+                    }
+                    if (min < 0)
+                        l = l.Sum(sampling[idx].mulScalar(h));
+                    else if (min > 0)
+                    {
+                        stop = true;
+                        break;
                     }
                 }
-                if (min < 0)
+                if (!stop)
+                    MessageBox.Show("Классы линейно неразделимы");
+                else
                 {
-                    l = l.Sum(sampling[idx].mulScalar(h));
+                    MessageBox.Show("Классы линейно разделимы");
+                    // Фаза 2 - определение порога                
+                    separationLine = Kozinets(toConvexHull(sampling));   // определение наилучшей разделяющей прямой
+                    if (separationLine == null)
+                        return;
+                    recognize1.Visible = true;
+                    // поиск диапазона порога: maxY < T <= minX
+                    double minX = double.MaxValue;
+                    for (int i = 0; i < classSize; ++i)
+                    {
+                        double sc = separationLine.scalarProduct(sampling[i]);
+                        if (sc < minX)
+                            minX = sc;
+                    }
+                    double maxY = double.MinValue;
+                    for (int i = classSize; i < sampling.Count; ++i)
+                    {
+                        sampling[i].Neg();
+                        double sc = separationLine.scalarProduct(sampling[i]);
+                        if (sc > maxY)
+                            maxY = sc;
+                    }
+                    threshold = (maxY + minX) / 2.0;
+                    //Console.WriteLine(threshold);
                 }
-                else if (min > 0)
-                {
-                    stop = true;
-                    break;
-                }                
-            }            
-            if(!stop)
-                MessageBox.Show("Классы линейно неразделимы");
-            else
-            {
-                MessageBox.Show("Классы линейно разделимы");
-                // Фаза 2 - определение порога                
-                separationLine = Kozinets(toConvexHull(sampling));   // определение наилучшей разделяющей прямой
-                if (separationLine == null)
-                    return;
-                recognize1.Visible = true;
-                // поиск диапазона порога: maxY < T <= minX
-                double minX = double.MaxValue;
-                for(int i = 0; i < classSize; ++i)
-                {
-                    double sc = separationLine.scalarProduct(sampling[i]);
-                    if (sc < minX)
-                        minX = sc;
-                }                
-                double maxY = double.MinValue;
-                for (int i = classSize; i < sampling.Count; ++i)
-                {
-                    sampling[i].Neg();
-                    double sc = l.scalarProduct(sampling[i]);
-                    if (sc > maxY)
-                        maxY = sc;
-                }
-                threshold = minX;               
-                //threshold = (maxY + minX) / 2.0;
-                //Console.WriteLine(threshold);
             }
         }
 
@@ -265,7 +266,6 @@ namespace AI_1
             else
                 MessageBox.Show("Down");
         }
-
         /// <summary>
         /// создание обучающих выборок
         /// </summary>
@@ -320,7 +320,7 @@ namespace AI_1
             return - num / denom;
         }
         /// <summary>
-        /// определение наилучшей разделяющей прямой
+        /// определение наилучшей разделяющей прямой алгоритмом Козинца
         /// </summary>
         /// <param name="w">выборка из выпуклых оболочек</param>
         /// <returns>Матрица, соответствующая наилучшей разделяющей прямой</returns>
@@ -376,7 +376,7 @@ namespace AI_1
             // загрузка сетчатки
             Retina img = new Retina(bmp.Height, bmp.Height);
             img.Fill(bmp);
-            img.Noise(20);
+            img.Noise((int)numericUpDown1.Value);
             pictureBox1.Image.Dispose();
             pictureBox1.Image = img.Save();            
         }
