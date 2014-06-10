@@ -47,8 +47,8 @@
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -166,7 +166,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.DefaultExt = "bmp";
-            this.openFileDialog1.Filter = "BMP-files (*.bmp) | *.bmp";
+            this.openFileDialog1.Filter = "Image-files (*.bmp, *jpg) | *.bmp;*jpg";
             // 
             // saveFileDialog1
             // 
@@ -194,6 +194,7 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Direction";
+            this.groupBox2.Visible = false;
             // 
             // radioButton2
             // 
@@ -228,15 +229,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Noise";
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(27, 14);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(15, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "%";
-            // 
             // numericUpDown1
             // 
             this.numericUpDown1.Location = new System.Drawing.Point(48, 7);
@@ -248,6 +240,15 @@
             0,
             0,
             0});
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(27, 14);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(15, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "%";
             // 
             // Form1
             // 

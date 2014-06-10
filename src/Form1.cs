@@ -10,6 +10,8 @@ using System.Windows.Forms;
 
 namespace AI_1
 {
+    enum SHAPE_TYPE { TRIANGLE,DIGIT }
+
     public partial class Form1 : Form
     {
         Form2 form2 = new Form2();
@@ -19,6 +21,7 @@ namespace AI_1
         const int shift = 2;   // сдвиг по сетчатке        
         Retina separationLine; // разделяющая прямая
         double threshold = 1;  // порог
+        SHAPE_TYPE iType = SHAPE_TYPE.DIGIT;
 
         public Form1()
         {
@@ -164,8 +167,11 @@ namespace AI_1
                     pt3 = new Point(w / 2, h / 2 + centerMargin);
                 }                
                 g.Clear(pictureBox1.BackColor);
-                g.DrawPolygon(pen, new Point[] { pt1, pt2, pt3 });
-                g.FillPolygon(new SolidBrush(pen.Color), new Point[] { pt1, pt2, pt3 });
+                if (iType == SHAPE_TYPE.TRIANGLE)
+                {
+                    g.DrawPolygon(pen, new Point[] { pt1, pt2, pt3 });
+                    g.FillPolygon(new SolidBrush(pen.Color), new Point[] { pt1, pt2, pt3 });
+                }
                 g.Dispose();
                 if (pictureBox1.Image != null)
                     pictureBox1.Image.Dispose();
@@ -181,7 +187,7 @@ namespace AI_1
                 // Фаза 1 - проверка на линейную разделимость
                 // шаг 1 - инициализация
                 int classSize = int.Parse(form3.textBox1.Text); // кол-во элементов класса в выборке
-                List<Retina> sampling = new List<Retina>(InitW(classSize));
+                List<Retina> sampling = InitW(2, classSize);
                 if (sampling == null)
                     return;
                 int m = (int)form2.numericUpDown1.Value;
@@ -261,39 +267,47 @@ namespace AI_1
             Retina s = new Retina(bmp.Height + 1, bmp.Width, true);
             s.Fill(bmp);
             double sc = separationLine.scalarProduct(s);
-            if (sc >= threshold)
-                MessageBox.Show("Up");
+            if(iType == SHAPE_TYPE.DIGIT)
+                if (sc >= threshold)
+                    MessageBox.Show("0");
+                else
+                    MessageBox.Show("1");
             else
-                MessageBox.Show("Down");
+                if (sc >= threshold)
+                    MessageBox.Show("Up");
+                else
+                    MessageBox.Show("Down");
         }
         /// <summary>
         /// создание обучающих выборок
         /// </summary>
-        /// <param name="cnt">число элементов выборки</param>
-        /// <returns>список, состоящий из 2 выборок разных классов изображений</returns>
-        List<Retina> InitW(int cnt)
+        /// <param name="m">кол-во классов</param>
+        /// <param name="n">размер выборки</param>
+        /// <returns>список, состоящий из m выборок разных классов изображений</returns>
+        List<Retina> InitW(int m, int n)
         {
             List<Retina> sampling = new List<Retina>();
-            for (int i = 1; i <= 2 * cnt; ++i)
-            {
-                string s = "triangle" + i + "." + saveFileDialog1.DefaultExt;
-                Bitmap bmp;
-                try
+            for(int j = 0; j < m; ++j)
+                for (int i = 0; i < n; ++i)
                 {
-                    bmp = new Bitmap(@"..\..\images\" + s);
-                    //bmp = new Bitmap(@"images\" + s); 
+                    string s = (iType == SHAPE_TYPE.DIGIT ? "digit" : "triangle") + j + "-" + i + "." + (iType == SHAPE_TYPE.DIGIT ? "jpg" : saveFileDialog1.DefaultExt);
+                    Bitmap bmp;
+                    try
+                    {
+                        bmp = new Bitmap(@"..\..\images\" + s);
+                        //bmp = new Bitmap(@"images\" + s); 
+                    }
+                    catch
+                    {
+                        MessageBox.Show("File " + s + " has a wrong format", "Error");
+                        return null;
+                    }
+                    Retina elem = new Retina(bmp.Height + 1, bmp.Width, true);
+                    elem.FillExtend(bmp, 1);
+                    if (j > 0)
+                        elem.Neg();
+                    sampling.Add(elem);
                 }
-                catch
-                {
-                    MessageBox.Show("File " + s + " has a wrong format", "Error");
-                    return null;
-                }
-                Retina elem = new Retina(bmp.Height + 1, bmp.Width, true);
-                elem.FillExtend(bmp, 1);
-                if (i > cnt)
-                    elem.Neg();
-                sampling.Add(elem);
-            }
             return sampling;
         }        
 
