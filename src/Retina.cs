@@ -242,7 +242,19 @@ namespace AI_1
             return new Point((int)Math.Round(p.X * that[0, 0] + p.Y * that[1, 0] + that[2, 0]), 
                 (int)Math.Round(p.X * that[0, 1] + p.Y * that[1, 1] + that[2, 1]));
         }
-
+        /// <summary>
+        /// Объединение двух сетчаток, элементы которых содержат 0 или 1.
+        /// </summary>
+        /// <param name="that">Второе слагаемое-сетчатка</param>
+        /// <returns>Объект Retina, сетчатка которой является результатом объединения</returns>
+        public Retina Union(Retina that)
+        {
+            Retina res = new Retina(m, n);
+            for (int i = 0; i < m; ++i)
+                for (int j = 0; j < n; ++j)
+                    res[i, j] = (this[i, j] == 0 && that[i, j] == 0) ? 0 : 1;
+            return res;
+        }
         int m, n;
         double[,] matr;
         bool isExtend;
