@@ -166,7 +166,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.DefaultExt = "bmp";
-            this.openFileDialog1.Filter = "Image-files (*.bmp, *jpg) | *.bmp;*jpg";
+            this.openFileDialog1.Filter = "Image-files (*.bmp, *.jpg) | *.bmp;*.jpg";
             // 
             // saveFileDialog1
             // 
@@ -193,30 +193,29 @@
             this.groupBox2.Size = new System.Drawing.Size(98, 65);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Direction";
-            this.groupBox2.Visible = false;
+            this.groupBox2.Text = "Class";
             // 
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
             this.radioButton2.Location = new System.Drawing.Point(3, 39);
             this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(53, 17);
+            this.radioButton2.Size = new System.Drawing.Size(46, 17);
             this.radioButton2.TabIndex = 3;
-            this.radioButton2.Text = "Down";
+            this.radioButton2.Text = "Digit";
             this.radioButton2.UseVisualStyleBackColor = true;
+            this.radioButton2.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
             // 
             // radioButton1
             // 
             this.radioButton1.AutoSize = true;
-            this.radioButton1.Checked = true;
             this.radioButton1.Location = new System.Drawing.Point(3, 16);
             this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(39, 17);
+            this.radioButton1.Size = new System.Drawing.Size(63, 17);
             this.radioButton1.TabIndex = 2;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "Up";
+            this.radioButton1.Text = "Triangle";
             this.radioButton1.UseVisualStyleBackColor = true;
+            this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
             // 
             // groupBox1
             // 
@@ -232,6 +231,11 @@
             // numericUpDown1
             // 
             this.numericUpDown1.Location = new System.Drawing.Point(48, 7);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(44, 20);
             this.numericUpDown1.TabIndex = 1;
