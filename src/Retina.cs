@@ -113,8 +113,8 @@ namespace AI_1
             Random r = new Random();
             for (int i = 0; i < m; ++i)
                 for (int j = 0; j < n; ++j)
-                    if (this[i, j] == 1 && r.NextDouble() > 1 - noise / 100.0)
-                        this[i, j] = 0;                    
+                    if (r.NextDouble() > 1 - noise / 100.0)
+                        this[i, j] = Math.Abs(this[i, j] - 1);                    
         }
         /// <summary>
         /// Скалярное произведение сетчаток
