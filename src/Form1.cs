@@ -10,28 +10,25 @@ using System.Windows.Forms;
 
 namespace AI_1
 {
-    enum SHAPE_TYPE { TRIANGLE, DIGIT }
+    enum SHAPE_TYPE { TRIANGLE, DIGIT, FIGURE }
 
     public partial class Form1 : Form
     {
         Form2 form2 = new Form2();
-        Form3 form3 = new Form3();
-        Pen pen;
-        Font font;
-        Point[] figureContour;
+        Form3 form3 = new Form3();                      
+        Shape shape;
         const int shift = 2;        // сдвиг по сетчатке               
         List<Retina> separationLine;// разделяющие прямые для соотвествующих классов
         List<double> threshold;     // пороги для соответствующих классов
         SHAPE_TYPE iType;
-        int classes;
+        int classes;                // кол-во распознаваемых классов
 
         public Form1()
         {
             InitializeComponent();
             AddOwnedForm(form2);
-            openFileDialog1.InitialDirectory = saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
-            pen = Pens.Black;
-            radioButton2.Checked = true;            
+            openFileDialog1.InitialDirectory = saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();            
+            comboBox1.SelectedIndex = 0;                      
         }
         /// <summary>
         /// создание обучающих выборок
@@ -148,16 +145,7 @@ namespace AI_1
             }
             // шаг 3 - окончание процесса            
             return l;
-        }
-        /// <summary>
-        /// Вычисление центра масс точек набора
-        /// </summary>
-        /// <param name="p">массив точек</param>
-        /// <returns>центр масс точек набора</returns>
-        Point bulkCenter(Point[] p)
-        {
-            return new Point(p.Sum(e => e.X) / p.Length, p.Sum(e => e.Y) / p.Length);
-        }
+        }        
         //
         static void Swap<T>(IList<T> list, int indexA, int indexB)
         {
@@ -274,76 +262,55 @@ namespace AI_1
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (figureContour == null)
+            if (shape == null)
                 return;
-            Point cntr = new Point();
-            Retina mrot = null;
+            Point cntr;
+            Retina mrot;
             switch (e.KeyCode)
             {
-                case Keys.Up:
-                    if (iType == SHAPE_TYPE.TRIANGLE && figureContour.All(p => p.Y <= 0) || iType == SHAPE_TYPE.DIGIT && figureContour[0].Y <= 0)
-                        return;
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i].Y -= shift;
+                case Keys.Up:                    
+                    shape.ShiftUp(shift);
                     break;
                 case Keys.Down:
-                    double dh = Math.Floor(pictureBox1.Image.Height * .95);
-                    if (iType == SHAPE_TYPE.TRIANGLE && figureContour.All(p => p.Y >= dh) || iType == SHAPE_TYPE.DIGIT && figureContour[1].Y >= dh)
-                        return;
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i].Y += shift;
+                    int dh = (int)Math.Floor(pictureBox1.Image.Height * .95);                                        
+                    shape.ShiftDown(shift,pictureBox1.Image.Height);
                     break;
-                case Keys.Left:
-                    if (figureContour[0].X <= 0)
-                        return;
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i].X -= shift;
+                case Keys.Left:                    
+                    shape.ShiftLeft(shift);
                     break;
                 case Keys.NumPad6:  // поворот по часовой стрелке  
-                    cntr = bulkCenter(figureContour);
-                    mrot = Retina.Translation(-cntr.X, -cntr.Y) * Retina.Rotation(Math.PI / 2) * Retina.Translation(cntr.X, cntr.Y);
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i] *= mrot;
+                    if (iType == SHAPE_TYPE.TRIANGLE)
+                    {
+                        cntr = shape.getCenterPoint();
+                        mrot = Retina.Translation(-cntr.X, -cntr.Y) * Retina.Rotation(Math.PI / 2) * Retina.Translation(cntr.X, cntr.Y);
+                        for (int i = 0; i < shape.points.Length; ++i)
+                            shape.points[i] *= mrot;
+                    }
                     break;
-                case Keys.Right:
-                    if (figureContour[1].X >= pictureBox1.Image.Width - 1)
-                        return;
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i].X += shift;
+                case Keys.Right:                    
+                    shape.ShiftRight(shift, pictureBox1.Image.Width - 1);
                     break;
                 case Keys.NumPad4:  // поворот против часовой стрелки
-                    cntr = bulkCenter(figureContour);
-                    mrot = Retina.Translation(-cntr.X, -cntr.Y) * Retina.Rotation(-Math.PI / 2) * Retina.Translation(cntr.X, cntr.Y);
-                    for (int i = 0; i < figureContour.Count(); ++i)
-                        figureContour[i] *= mrot;
+                    if (iType == SHAPE_TYPE.TRIANGLE)
+                    {
+                        cntr = shape.getCenterPoint();
+                        mrot = Retina.Translation(-cntr.X, -cntr.Y) * Retina.Rotation(-Math.PI / 2) * Retina.Translation(cntr.X, cntr.Y);
+                        for (int i = 0; i < shape.points.Length; ++i)
+                            shape.points[i] *= mrot;
+                    }
                     break;
                 default:
                     return;
             }
             Graphics g = Graphics.FromImage(pictureBox1.Image);
             g.Clear(pictureBox1.BackColor);
-            if (iType == SHAPE_TYPE.TRIANGLE)
-            {
-                g.DrawPolygon(pen, figureContour);
-                g.FillPolygon(new SolidBrush(pen.Color), figureContour);
-            }
-            else
-            {
-                //g.DrawEllipse(pen, new Rectangle(figureContour[0], new Size(figureContour[1].X - figureContour[0].X, figureContour[1].Y - figureContour[0].Y)));
-                //Rectangle rect = new Rectangle(figureContour[0], new Size(figureContour[1].X - figureContour[0].X, figureContour[1].Y - figureContour[0].Y));
-                g.DrawString(form2.numericUpDown3.Value.ToString(), font, new SolidBrush(pen.Color), new Rectangle(figureContour[0], new Size(figureContour[1].X - figureContour[0].X, figureContour[1].Y - figureContour[0].Y)));
-                //g.DrawRectangle(pen, rect);
-            }
+            shape.Draw(g);
+            g.Dispose();            
             pictureBox1.Invalidate();
         }
 
         private void new1_Click(object sender, EventArgs e)
-        {
-            form2.ActiveControl = form2.numericUpDown1;
-            if (radioButton1.Checked)
-                form2.groupBox1.Visible = true;
-            else
-                form2.groupBox2.Visible = true;
+        {            
             if (form2.ShowDialog() == DialogResult.OK)
             {
                 saveFileDialog1.FileName = "";
@@ -357,50 +324,53 @@ namespace AI_1
                 Image im = new Bitmap(w, h);
                 Graphics g = Graphics.FromImage(im);
                 g.Clear(pictureBox1.BackColor);
-                int centerMargin = Math.Min(w, h) / 4;
-                font = new Font(FontFamily.GenericSerif, (float)Math.Floor(w / 2.083));
-                if (iType == SHAPE_TYPE.TRIANGLE)
+                int centerMargin = Math.Min(w, h) / 4;                
+                switch (comboBox1.SelectedIndex)
                 {
-                    figureContour = new Point[3];
-                    if (form2.radioButton1.Checked)
-                    {
-                        figureContour[0] = new Point(w / 2 - centerMargin, h / 2 + centerMargin);
-                        figureContour[1] = new Point(w / 2 + centerMargin, h / 2 + centerMargin);
-                        figureContour[2] = new Point(w / 2, h / 2 - centerMargin);
-                    }
-                    else
-                    {
-                        figureContour[0] = new Point(w / 2 - centerMargin, h / 2 - centerMargin);
-                        figureContour[1] = new Point(w / 2 + centerMargin, h / 2 - centerMargin);
-                        figureContour[2] = new Point(w / 2, h / 2 + centerMargin);
-                    }
-                    g.DrawPolygon(pen, figureContour);
-                    g.FillPolygon(new SolidBrush(pen.Color), figureContour);
+                    case 0:
+                        {                                                        
+                            if (form2.radioButton1.Checked)
+                            {
+                                shape = new TriangleShape(new Point(w / 2, h / 2 - centerMargin),
+                                    new Point(w / 2 - centerMargin, h / 2 + centerMargin),
+                                    new Point(w / 2 + centerMargin, h / 2 + centerMargin));                                
+                            }
+                            else
+                            {
+                                shape = new TriangleShape(new Point(w / 2, h / 2 + centerMargin),
+                                    new Point(w / 2 - centerMargin, h / 2 - centerMargin),
+                                    new Point(w / 2 + centerMargin, h / 2 - centerMargin));                                
+                            }                                                                               
+                            break;
+                        }
+                    case 1:
+                        {                                                        
+                            shape = new TextRectangleShape(form2.numericUpDown3.Value.ToString(), 
+                                new Font(FontFamily.GenericSerif, (float)Math.Floor(w / 2.083)),
+                                new Point(w / 2 - centerMargin, h / 2 - (int)(1.5 * centerMargin)),
+                                new Point(w / 2 + centerMargin, h / 2 + (int)(1.5 * centerMargin)));                            
+                            break;
+                        }
+                    case 2:
+                        shape = new RectangleShape(new Point(w / 2 - centerMargin, h / 2 - centerMargin), new Point(w / 2 + centerMargin, h / 2 + centerMargin));                        
+                        break;
+                    case 3:
+                        shape = new CircleShape(new Point(w / 2, h / 2), centerMargin);                        
+                        break;
                 }
-                else
-                {
-                    figureContour = new Point[2];
-                    figureContour[0] = new Point(w / 2 - centerMargin, h / 2 - (int)(1.5 * centerMargin));
-                    figureContour[1] = new Point(w / 2 + centerMargin, h / 2 + (int)(1.5 * centerMargin));
-                    //g.DrawEllipse(pen, new Rectangle(figureContour[0], new Size(2 * centerMargin, 3 * centerMargin)));                    
-                    //Rectangle rect = new Rectangle(figureContour[0], new Size(2 * centerMargin, 3 * centerMargin));
-                    g.DrawString(form2.numericUpDown3.Value.ToString(), font, new SolidBrush(pen.Color), new Rectangle(figureContour[0], new Size(2 * centerMargin, 3 * centerMargin)));
-                    //g.DrawRectangle(pen, rect);
-                }
+                shape.Draw(g);
                 g.Dispose();
                 if (pictureBox1.Image != null)
                     pictureBox1.Image.Dispose();
                 pictureBox1.Image = im;
-                this.ActiveControl = this.pictureBox1;
-            }
-            form2.groupBox1.Visible = form2.groupBox2.Visible = false;
+                this.ActiveControl = pictureBox1;
+            }            
         }
 
         private void learn1_Click(object sender, EventArgs e)
         {
             if (form3.ShowDialog() == DialogResult.OK)
-            {
-                classes = radioButton1.Checked ? 2 : (int)form2.numericUpDown3.Maximum + 1;         // кол-во распознаваемых классов
+            {                
                 int classSize = int.Parse(form3.textBox1.Text); // кол-во элементов в классе
                 var sample = sampleInit(classes, classSize);
                 if (sample == null)
@@ -521,10 +491,29 @@ namespace AI_1
             pictureBox1.Image.Dispose();
             pictureBox1.Image = img.Save();
         }
-
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-            this.iType = sender == radioButton1 ? SHAPE_TYPE.TRIANGLE : SHAPE_TYPE.DIGIT;
+        
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {            
+            switch (comboBox1.SelectedIndex)
+            {
+                case 0:
+                    classes = 2;
+                    iType = SHAPE_TYPE.TRIANGLE;       
+                    form2.groupBox1.Visible = true;
+                    form2.groupBox2.Visible = false;
+                    break;
+                case 1:
+                    classes = (int)form2.numericUpDown3.Maximum + 1;
+                    iType = SHAPE_TYPE.DIGIT;
+                    form2.groupBox1.Visible = false;
+                    form2.groupBox2.Visible = true;
+                    break;
+                default:
+                    classes = 0;
+                    iType = SHAPE_TYPE.FIGURE;       
+                    form2.groupBox1.Visible = form2.groupBox2.Visible = false;
+                    break;
+            }
             recognize1.Visible = false;
         }
     }
